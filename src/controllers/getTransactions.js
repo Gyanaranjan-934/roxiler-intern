@@ -1,28 +1,39 @@
-import { asyncHandler } from "../../utils/asyncHandler.js"
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { Product } from "../models/product.js";
+import { ApiResponse } from '../../utils/ApiResponse.js'
+
 const getAllTransactions = asyncHandler(async (req, res) => {
     try {
-        const { month, search, page = 1, perPage = 10 } = req.query;
+        const { month, searchName, pageNumber, itemsPerPage } = req.query;
 
-        // Build the query based on the provided parameters
-        const query = {
-            dateOfSale: { $regex: new RegExp(`-${month}-`, 'i') },
+        const filter = {
             $or: [
-                { title: { $regex: new RegExp(search, 'i') } },
-                { description: { $regex: new RegExp(search, 'i') } },
-                { price: { $regex: new RegExp(search, 'i') } },
+                { name: { $regex: searchName, $options: 'i' } },
+                { description: { $regex: searchName, $options: 'i' } },
+                { category: { $regex: searchName, $options: 'i' } },
+                { price: parseFloat(searchName) || 0 },
             ],
         };
 
-        // Execute the query with pagination
-        const transactions = await Transaction.find(query)
-            .skip((page - 1) * perPage)
-            .limit(perPage);
+        if (month) {
+            filter.$expr = {
+                $and: [
+                    { $eq: [{ $month: '$dateOfSale' }, parseInt(month)] },
+                ],
+            };
+        }
 
-        res.json({ transactions });
+        
+        const results = await Product.find(filter)
+            .skip((pageNumber - 1) * itemsPerPage)
+            .limit(parseInt(itemsPerPage));
+
+        res.status(200).json({ results, length: results.length });
     } catch (error) {
-        console.error('Error listing transactions:', error.message);
+        console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-})
+});
 
-export default getAllTransactions
+
+export default getAllTransactions;

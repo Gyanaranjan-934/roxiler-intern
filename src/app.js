@@ -39,6 +39,6 @@ app.get('/initialize-database', async (req, res) => {
     }
 });
 
-app.use('api/v1/transactions',  transactionRouter)
+app.use('/api/v1', transactionRouter); // Corrected the URL path
 
 export { app }
