@@ -1,6 +1,5 @@
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { Product } from "../models/product.js";
-import { ApiResponse } from '../../utils/ApiResponse.js'
 
 const getAllTransactions = asyncHandler(async (req, res) => {
     try {
@@ -21,14 +20,15 @@ const getAllTransactions = asyncHandler(async (req, res) => {
                     { $eq: [{ $month: '$dateOfSale' }, parseInt(month)] },
                 ],
             };
+
+            const results = await Product.find(filter)
+                .skip((pageNumber - 1) * itemsPerPage)
+                .limit(parseInt(itemsPerPage));
+
+            res.status(200).json({ results });
+        } else {
+            res.status(404).json({ message: "Please select a month first" })
         }
-
-        
-        const results = await Product.find(filter)
-            .skip((pageNumber - 1) * itemsPerPage)
-            .limit(parseInt(itemsPerPage));
-
-        res.status(200).json({ results });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
