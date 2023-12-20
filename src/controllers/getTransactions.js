@@ -28,7 +28,7 @@ const getAllTransactions = asyncHandler(async (req, res) => {
             .skip((pageNumber - 1) * itemsPerPage)
             .limit(parseInt(itemsPerPage));
 
-        res.status(200).json({ results, length: results.length });
+        res.status(200).json({ results });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
